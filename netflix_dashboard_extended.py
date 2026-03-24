@@ -38,7 +38,6 @@ def load_data():
     # Decode content and load into DataFrame
     content = response.content.decode('utf-8')
     df = pd.read_csv(io.StringIO(content))
-    df.head(3)
     
     # Clean data (handling nulls)
     df['country'] = df['country'].fillna('Unknown')
@@ -270,7 +269,7 @@ st.plotly_chart(fig_trend, width='stretch')
 
 # Insight 5: Top Genres per Year
 st.subheader("Top Genres Per Year")
-st.markdown("Discover which genres dominated Netflix content by year")
+st.markdown("Discover which genre was most popular on Netflix content by year")
 # Get top genre per year from filtered data
 genre_per_year = filtered_df.copy()
 genre_per_year['genre_list'] = genre_per_year['listed_in'].str.split(', ')
@@ -282,12 +281,19 @@ top_genres_by_year = top_genres_by_year[top_genres_by_year['release_year'] >= ye
 top_genres_by_year = top_genres_by_year[top_genres_by_year['release_year'] <= year_filter[1]]
 
 if len(top_genres_by_year) > 0:
+    # Get the most popular genre for each year (top genre per year)
+    top_genre_per_year = top_genres_by_year.groupby('release_year').first().reset_index()
+    
     fig_genres_year = px.bar(
-        top_genres_by_year.groupby('release_year')['count'].sum().reset_index(),
+        top_genre_per_year,
         x='release_year',
         y='count',
-        title="Genre Diversity Over Time"
+        title="Most Popular Genre Per Year",
+        labels={'release_year': 'Release Year', 'count': 'Number of Titles', 'genre_list': 'Genre'},
+        color='genre_list',
+        text='genre_list'
     )
+    fig_genres_year.update_traces(textposition='outside')
     fig_genres_year.update_xaxes(title="Release Year")
     fig_genres_year.update_yaxes(title="Number of Titles")
     st.plotly_chart(fig_genres_year, width='stretch')
