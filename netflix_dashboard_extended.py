@@ -1,5 +1,8 @@
+from altair.datasets import url
 import streamlit as st
 import pandas as pd
+import io
+import requests
 
 # Plotly is required for this dashboard. Provide a clear error when missing.
 try:
@@ -26,7 +29,16 @@ st.markdown("Analyze Netflix's catalog, exploring content types, global distribu
 @st.cache_data # Cache the data to improve load times
 def load_data():
     # Replace with your actual dataset filename if different
-    df = pd.read_csv("Week-5-task/netflix_titles (1).csv")
+    
+
+    url = 'https://drive.google.com/uc?export=download&id=1uCSB6lS329wnOLrQCKHOj3ZxWYM6MGX-'
+    response = requests.get(url)
+    response.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
+
+    # Decode content and load into DataFrame
+    content = response.content.decode('utf-8')
+    df = pd.read_csv(io.StringIO(content))
+    df.head(3)
     
     # Clean data (handling nulls)
     df['country'] = df['country'].fillna('Unknown')
